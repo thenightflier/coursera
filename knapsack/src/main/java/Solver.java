@@ -2,8 +2,10 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * The class <code>Solver</code> is an implementation of a greedy algorithm to solve the knapsack problem.
@@ -30,42 +32,47 @@ public class Solver {
 
         // read the lines out of the file
         Parser parser = new Parser(fileName);
-        int numberOfItems = parser.getNumberOfItems();
         int capacity = parser.getCapacity();
+        System.out.println("capacity = " + capacity);
 
         Item items[] = parser.getItems();
         printItems(items);
 
         // a trivial greedy algorithm for filling the knapsack
         // it takes items in-order until the knapsack is full
-        boolean selectedItems[] = greedySelection(items, capacity);
-
-
+        List<Item> baggedItems = greedySelection(items, capacity);
+        System.out.println("greedy....");
         // prepare the solution in the specified output format
-//        System.out.println(value + " 0");
-        printSelectedItems(selectedItems, items);
+        printSelectedItems(baggedItems);
+        System.out.println("density based....");
+        baggedItems = densityBasedGreedySelection(Arrays.copyOf(items, items.length), capacity);
+
+        printSelectedItems(baggedItems);
     }
 
     private static void printItems(Item[] items) {
+        System.out.println();
         for (Item item : items) {
             System.out.println(item);
         }
     }
 
-    private static void printSelectedItems(boolean[] taken, Item items[]) {
-        int value = 0;
-        for (int i = 0; i < taken.length; i++) {
-            System.out.println("[" + i + "] = " + taken[i] + " ");
-            if (taken[i])
-                value += items[i].getValue();
+    private static void printSelectedItems(List<Item> items) {
+        int totalValue = 0;
+        int totalWeight= 0;
+        System.out.println();
+        for (Item item : items) {
+            totalValue += item.getValue();
+            totalWeight += item.getWeight();
+            System.out.println("Item in the Bag " + item);
         }
-        System.out.println("value = " + value);
+        System.out.println("Total value = " + totalValue);
+        System.out.println("Total Weight= " + totalWeight);
     }
 
-    private static boolean[] densityBasedGreedySelection(Item items[], int capacity) {
-        int value = 0;
+    private static List<Item> densityBasedGreedySelection(Item items[], int capacity) {
         int weight = 0;
-        boolean[] itemsTaken = new boolean[items.length];
+        List<Item> itemsTaken = new ArrayList<Item>();
         Arrays.sort(items, new Comparator<Item>() {
             /**
              * Dense item first
@@ -75,30 +82,31 @@ public class Solver {
              */
             @Override
             public int compare(Item item, Item item2) {
-                return ComparisonChain.start().compare(item.getDensity(), item2.getDensity(), Ordering.natural().reverse()).result();
+                return ComparisonChain.start().compare(item.getDensity(), item2.getDensity(), Ordering.natural().reverse()).compare(item.getValue(),item2.getValue(),Ordering.natural().reverse())
+                        .compare(item.getWeight(),item2.getWeight()).result();
             }
         });
 
-        for (int i = 0; i < items.length; i++) {
-            if (weight + items[i].getWeight() < capacity) {
-                itemsTaken[i] = true;
+//        printItems(items);
+
+        for (Item item : items) {
+            if (weight + item.getWeight() <= capacity) {
+                itemsTaken.add(item);
+                weight += item.getWeight();
             }
         }
 
         return itemsTaken;
     }
 
-    private static boolean[] greedySelection(Item items[], int capacity) {
-        int value = 0;
+    private static List<Item> greedySelection(Item items[], int capacity) {
+
         int weight = 0;
-        boolean[] itemsTaken = new boolean[items.length];
-        for (int i = 0; i < items.length; i++) {
-            if (weight + items[i].getWeight() <= capacity) {
-                itemsTaken[i] = true;
-                value += items[i].getValue();
-                weight += items[i].getWeight();
-            } else {
-                itemsTaken[i] = false;
+        List<Item> itemsTaken = new ArrayList<Item>();
+        for (Item item : items) {
+            if (weight + item.getWeight() <= capacity) {
+                itemsTaken.add(item);
+                weight += item.getWeight();
             }
         }
 

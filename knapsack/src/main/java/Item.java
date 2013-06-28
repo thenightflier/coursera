@@ -1,20 +1,29 @@
 import com.google.common.base.Objects;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  * Class representing an Item to put in the knapsack
  */
 class Item {
     private final int value;
     private final int weight;
-    private final int density;
+    private final double density;
+    private final int id;
 
-    public Item(int value, int weight) {
+    public Item(int id, int value, int weight) {
+        this.id = id;
         this.value = value;
         this.weight = weight;
-        this.density = value / weight;
+        this.density = BigDecimal.valueOf(value).divide(BigDecimal.valueOf(weight),4,RoundingMode.HALF_EVEN).doubleValue();
     }
 
-    int getDensity() {
+    public int getId() {
+        return id;
+    }
+
+    public double getDensity() {
         return density;
     }
 

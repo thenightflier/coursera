@@ -52,7 +52,7 @@ public class Parser {
             String[] parts = line.split("\\s+");
             int value = Integer.parseInt(parts[0]);
             int weight = Integer.parseInt(parts[1]);
-            Item temp = new Item(value, weight);
+            Item temp = new Item(i, value, weight);
             items[i] = temp;
         }
 
